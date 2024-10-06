@@ -1,5 +1,4 @@
 version: 2
-
 sources:
   - name: dbt_gts
     database: snowflake_sample_data
@@ -20,3 +19,38 @@ sources:
               - relationships:
                   to: ref('orders')
                   field: o_orderkey
+models:
+  - name: stg_lineitem
+    columns:
+      - name: l_orderkey
+        data_type: number
+      - name: l_partkey
+        data_type: number
+      - name: l_suppkey
+        data_type: number
+      - name: l_linenumber
+        data_type: number
+      - name: l_quantity
+        data_type: number
+      - name: l_extendedprice
+        data_type: number
+      - name: l_discount
+        data_type: number
+      - name: l_tax
+        data_type: number
+      - name: l_returnflag
+        data_type: varchar
+      - name: l_linestatus
+        data_type: varchar
+      - name: l_shipdate
+        data_type: date
+      - name: l_commitdate
+        data_type: date
+      - name: l_receiptdate
+        data_type: date
+      - name: l_shipinstruct
+        data_type: varchar
+      - name: l_shipmode
+        data_type: varchar
+      - name: l_comment
+        data_type: varchar
