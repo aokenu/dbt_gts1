@@ -39,7 +39,7 @@ jobs:
       - name: Run dbt seed
         run: dbt seed
 
-      - name: Run dbt tests (test)
+      - name: Run dbt tests
         run: dbt test
 
       - name: Run dbt run
