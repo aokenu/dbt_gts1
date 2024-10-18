@@ -36,7 +36,7 @@ jobs:
       - name: Run dbt deps
         run: dbt deps
 
-      - name: Run dbt seed (if needed)
+      - name: Run dbt seed
         run: dbt seed
 
       - name: Run dbt tests
