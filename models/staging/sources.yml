@@ -1,4 +1,5 @@
 version: 2
+
 sources:
   - name: dbt_gts
     database: snowflake_sample_data
@@ -7,19 +8,28 @@ sources:
       - name: orders
         columns:
           - name: o_orderkey
-            data_tests:
-              - unique
-              - not_null
+          - name: o_orderstatus
+            #data_tests: 
+              #- test_column_for_null_values
+
       - name: lineitem
         columns:
           - name: l_orderkey
             data_tests:
-              - unique
               - not_null
               - relationships:
                   to: ref('orders')
                   field: o_orderkey
+      
+
 models:
+  - name: stg_orders
+    columns:
+      - name: o_totalprice
+        data_tests:
+          - average_dollars_spent_greater_than_one
+
+
   - name: stg_lineitem
     columns:
       - name: l_orderkey

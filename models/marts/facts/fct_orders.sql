@@ -52,4 +52,4 @@ group by
     om.total_item_sold,
     om.count_of_customer,
     om.total_amount
- vbc
+ 
