@@ -34,7 +34,11 @@ models:
               strictly: True
     data_tests:
       - dbt_utils.expression_is_true:
-          expression: "o_totalprice > 5"
+          expression: "o_totalprice > 1000"
+          config:
+            severty: warn
+            error_if: ">17000"
+            warn_if: ">100"    
     
 
 
