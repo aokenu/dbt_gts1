@@ -28,6 +28,14 @@ models:
       - name: o_totalprice
         data_tests:
           - average_dollars_spent_greater_than_one
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 20
+              row_condition: "o_totalprice is not null"
+              strictly: True
+    data_tests:
+      - dbt_utils.expression_is_true:
+          expression: "o_totalprice > 5"
+    
 
 
   - name: stg_lineitem
