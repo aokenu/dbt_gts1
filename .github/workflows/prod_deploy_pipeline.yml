@@ -31,9 +31,11 @@ jobs:
 
       # Set up environment variables
       - name: Set environment variables for dbt profile
+        run: |
+          mkdir -p ~/.dbt
+          echo "$DBT_PROFILE" > ~/.dbt/profiles.yml
         env:
-          DBT_PROFILES_DIR: ./  # Point to the profiles.yml directory
-        run: echo "Set environment variables"
+          DBT_PROFILE: ${{ secrets.DBT_PROFILE }}
 
       # Conditionally set environment variables based on the branch
       - name: Set environment for dev
