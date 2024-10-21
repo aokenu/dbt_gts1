@@ -72,7 +72,7 @@ jobs:
         run: dbt seed
 
       - name: Run dbt tests
-        run: dbt test --target $DBT_TARGET
+        run: dbt test
 
       - name: Run dbt run
-        run: dbt run --target $DBT_TARGET
+        run: dbt run
