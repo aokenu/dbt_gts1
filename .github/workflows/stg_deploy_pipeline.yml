@@ -1,4 +1,4 @@
-name: dbt prod Deployment Pipeline
+name: dbt staging Deployment Pipeline
 
 on:
   push:
