@@ -36,7 +36,7 @@ jobs:
         run: echo "Set environment variables"
 
       # Conditionally set environment variables based on the branch
-      - name: Set environment for branch
+      - name: Set environment for dev
         if: github.ref == 'refs/heads/dev'
         env:
           DBT_TARGET: dev
