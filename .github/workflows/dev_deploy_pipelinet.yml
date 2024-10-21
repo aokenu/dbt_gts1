@@ -1,0 +1,63 @@
+name: dbt dev deployment pipeline
+
+on:
+  push:
+    branches:
+      - dev
+  pull_request:
+    branches:
+      - dev
+
+jobs:
+  run-dbt:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Check out the repository
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Set up Python (for dbt)
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"  # Specify Python version
+
+      # Install dbt and adapter (replace dbt-snowflake with your adapter)
+      - name: Install dbt
+        run: |
+          python -m pip install --upgrade pip
+          pip install dbt-core dbt-snowflake  # Use the adapter you need
+
+      # Set up environment variables
+      - name: Set environment variables for dbt profile
+        env:
+          DBT_PROFILES_DIR: ./profiles  # Point to the profiles.yml directory
+        run: echo "Set environment variables"
+
+      # Conditionally set environment variables based on the branch
+      - name: Set environment for dev branch
+        if: github.ref == 'refs/heads/dev'
+        run: echo "Running in dev environment"
+        env:
+          DBT_TARGET: dev
+
+      - name: Set environment for staging branch
+        if: github.ref == 'refs/heads/staging'
+        run: echo "Running in staging environment"
+        env:
+          DBT_TARGET: staging
+
+      - name: Set environment for production branch
+        if: github.ref == 'refs/heads/main'
+        run: echo "Running in production environment"
+        env:
+          DBT_TARGET: prod
+
+      # Run dbt commands
+      - name: Run dbt commands
+        run: |
+          dbt deps  # Install dbt dependencies
+          dbt seed  # Load seeds (optional)
+          dbt run --target $DBT_TARGET  # Run models for the specified environment
+          dbt test --target $DBT_TARGET  # Run tests for the specified environment
