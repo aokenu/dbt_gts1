@@ -3,37 +3,35 @@ name: dbt Deployment Pipeline
 on:
   push:
     branches:
-      - dev     # Run on dev branch
-      - staging # Run on staging branch
-      - main    # Run on main (prod)
-  workflow_dispatch:  # Allows manual trigger from GitHub interface
+      - dev
+  pull_request:
+    branches:
+      - dev
 
 jobs:
-  run-dbt:
+  dbt-test:
     runs-on: ubuntu-latest
 
     steps:
-      # Check out the repository
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Set up Python (for dbt)
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: "3.x"  # Specify Python version
+          python-version: 3.9
 
-      # Install dbt and adapter (replace dbt-snowflake with your adapter)
-      - name: Install dbt
+      - name: Install dbt and dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install dbt-core dbt-snowflake  # Use the adapter you need
+          pip install dbt-core dbt-snowflake  # Update with your adapter (e.g., dbt-postgres, dbt-bigquery)
 
-      # Set up environment variables
-      - name: Set environment variables for dbt profile
+      - name: Set up the dbt profile
+        run: |
+          mkdir -p ~/.dbt
+          echo "$DBT_PROFILE" > ~/.dbt/profiles.yml
         env:
-          DBT_PROFILES_DIR: ./profiles  # Point to the profiles.yml directory
-        run: echo "Set environment variables"
+          DBT_PROFILE: ${{ secrets.DBT_PROFILE }}
 
       # Conditionally set environment variables based on the branch
       - name: Set environment for branch
@@ -67,9 +65,14 @@ jobs:
         run: echo "Running in production environment"
 
       # Run dbt commands
-      - name: Run dbt commands
-        run: |
-          dbt deps  # Install dbt dependencies
-          dbt seed  # Load seeds (optional)
-          dbt test --target $DBT_TARGET  # Run tests for the specified environment
-          dbt run --target $DBT_TARGET  # Run models for the specified environment
+      - name: Run dbt deps
+        run: dbt deps
+
+      - name: Run dbt seed
+        run: dbt seed
+
+      - name: Run dbt tests
+        run: dbt test
+
+      - name: Run dbt run
+        run: dbt run
