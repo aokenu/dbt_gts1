@@ -29,25 +29,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install dbt-core dbt-snowflake  # Use the adapter you need
 
-      - name: Set up the dbt profile
-        run: |
-          mkdir -p ~/.dbt
-          echo "$DBT_PROFILE" > ~/.dbt/profiles.yml
+        # Set environment variables and ensure DBT_PROFILES_DIR is set
+      - name: Set environment variables for dbt profile
         env:
-          DBT_PROFILE: ${{ secrets.DBT_PROFILE }}
-
-      # Conditionally set environment variables based on the branch
-      - name: Set environment for dev branch
-        if: github.ref == 'refs/heads/dev'
-        run: echo "Running in dev environment"
-        env:
-          DBT_TARGET: dev
-
-      - name: Set environment for staging branch
-        if: github.ref == 'refs/heads/staging'
-        run: echo "Running in staging environment"
-        env:
-          DBT_TARGET: staging
+          DBT_PROFILES_DIR: ${{ github.workspace }}/profiles  # Point to the correct directory containing profiles.yml
+        run: echo "Environment variables set"
 
       - name: Set environment for production branch
         if: github.ref == 'refs/heads/main'
@@ -60,5 +46,5 @@ jobs:
         run: |
           dbt deps  # Install dbt dependencies
           dbt seed  # Load seeds (optional)
-          dbt run --target $DBT_TARGET  # Run models for the specified environment
-          dbt test --target $DBT_TARGET  # Run tests for the specified environment
+          dbt run --target prod
+          dbt test --target prod
