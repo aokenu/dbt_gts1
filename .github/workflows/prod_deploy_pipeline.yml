@@ -1,12 +1,12 @@
-name: dbt prod Deployment Pipeline
+name: dbt Deployment Pipeline
 
 on:
   push:
     branches:
-      - main
-  pull_request:
-    branches:
-      - main
+      - dev     # Run on dev branch
+      - staging # Run on staging branch
+      - main    # Run on main (prod)
+  workflow_dispatch:  # Allows manual trigger from GitHub interface
 
 jobs:
   run-dbt:
@@ -29,22 +29,47 @@ jobs:
           python -m pip install --upgrade pip
           pip install dbt-core dbt-snowflake  # Use the adapter you need
 
-        # Set environment variables and ensure DBT_PROFILES_DIR is set
+      # Set up environment variables
       - name: Set environment variables for dbt profile
         env:
-          DBT_PROFILES_DIR: ${{ github.workspace }}/profiles  # Point to the correct directory containing profiles.yml
-        run: echo "Environment variables set"
+          DBT_PROFILES_DIR: ./profiles  # Point to the profiles.yml directory
+        run: echo "Set environment variables"
 
-      - name: Set environment for production branch
+      # Conditionally set environment variables based on the branch
+      - name: Set environment for branch
+        if: github.ref == 'refs/heads/dev'
+        env:
+          DBT_TARGET: dev
+          SNOWFLAKE_ROLE: ACCOUNTADMIN
+          SNOWFLAKE_DATABASE: DBT_DB
+          SNOWFLAKE_WAREHOUSE: DBT_WH
+          SNOWFLAKE_SCHEMA: DEV_DBT_SCHEMA
+        run: echo "Running in dev environment"
+
+      - name: Set environment for staging
+        if: github.ref == 'refs/heads/staging'
+        env:
+          DBT_TARGET: staging
+          SNOWFLAKE_ROLE: ACCOUNTADMIN
+          SNOWFLAKE_DATABASE: DBT_DB
+          SNOWFLAKE_WAREHOUSE: DBT_WH
+          SNOWFLAKE_SCHEMA: STAGING_DBT_SCHEMA
+        run: echo "Running in staging environment"
+
+      - name: Set environment for production
         if: github.ref == 'refs/heads/main'
-        run: echo "Running in production environment"
         env:
           DBT_TARGET: prod
+          SNOWFLAKE_ROLE: ACCOUNTADMIN
+          SNOWFLAKE_DATABASE: DBT_DB
+          SNOWFLAKE_WAREHOUSE: DBT_WH
+          SNOWFLAKE_SCHEMA: PROD_DBT_SCHEMA
+        run: echo "Running in production environment"
 
       # Run dbt commands
       - name: Run dbt commands
         run: |
           dbt deps  # Install dbt dependencies
           dbt seed  # Load seeds (optional)
-          dbt run --target prod
-          dbt test --target prod
+          dbt run --target $DBT_TARGET  # Run models for the specified environment
+          dbt test --target $DBT_TARGET  # Run tests for the specified environment
