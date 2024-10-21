@@ -7,7 +7,6 @@ on:
   pull_request:
     branches:
       - staging
-
 jobs:
   run-dbt:
     runs-on: ubuntu-latest
@@ -29,11 +28,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install dbt-core dbt-snowflake  # Use the adapter you need
 
-      # Set up environment variables
-      - name: Set environment variables for dbt profile
+      - name: Set up the dbt profile
+        run: |
+          mkdir -p ~/.dbt
+          echo "$DBT_PROFILE" > ~/.dbt/profiles.yml
         env:
-          DBT_PROFILES_DIR: ./profiles  # Point to the profiles.yml directory
-        run: echo "Set environment variables"
+          DBT_PROFILE: ${{ secrets.DBT_PROFILE }}
 
       # Conditionally set environment variables based on the branch
       - name: Set environment for dev branch
