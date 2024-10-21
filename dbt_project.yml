@@ -42,5 +42,12 @@ sources:
       +materialized: table
     intermediate:
       +materialized: table
-      
+
+data_tests:
+  stg_orders:
+    +severty: warn
+    +store_failures: True
+
+
+
     

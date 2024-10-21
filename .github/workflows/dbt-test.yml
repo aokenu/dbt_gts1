@@ -1,4 +1,4 @@
-name: dbt Test Workflow
+name: dbt Deployment Pipeline
 
 on:
   push:
@@ -33,6 +33,38 @@ jobs:
         env:
           DBT_PROFILE: ${{ secrets.DBT_PROFILE }}
 
+      # Conditionally set environment variables based on the branch
+      - name: Set environment for branch
+        if: github.ref == 'refs/heads/dev'
+        env:
+          DBT_TARGET: dev
+          SNOWFLAKE_ROLE: ACCOUNTADMIN
+          SNOWFLAKE_DATABASE: DBT_DB
+          SNOWFLAKE_WAREHOUSE: DBT_WH
+          SNOWFLAKE_SCHEMA: DEV_GTS_SCHEMA
+        run: echo "Running in dev environment"
+
+      - name: Set environment for staging
+        if: github.ref == 'refs/heads/staging'
+        env:
+          DBT_TARGET: staging
+          SNOWFLAKE_ROLE: ACCOUNTADMIN
+          SNOWFLAKE_DATABASE: DBT_DB
+          SNOWFLAKE_WAREHOUSE: DBT_WH
+          SNOWFLAKE_SCHEMA: STAGING_GTS_SCHEMA
+        run: echo "Running in staging environment"
+
+      - name: Set environment for production
+        if: github.ref == 'refs/heads/main'
+        env:
+          DBT_TARGET: prod
+          SNOWFLAKE_ROLE: ACCOUNTADMIN
+          SNOWFLAKE_DATABASE: DBT_DB
+          SNOWFLAKE_WAREHOUSE: DBT_WH
+          SNOWFLAKE_SCHEMA: PROD_GTS_SCHEMA
+        run: echo "Running in production environment"
+
+      # Run dbt commands
       - name: Run dbt deps
         run: dbt deps
 
