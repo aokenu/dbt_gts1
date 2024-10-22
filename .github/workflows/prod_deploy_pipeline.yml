@@ -73,5 +73,5 @@ jobs:
         run: |
           dbt deps  # Install dbt dependencies
           dbt seed  # Load seeds (optional)
-          dbt run prod
-          dbt test prod
+          dbt run --target prod
+          dbt test --target prod
