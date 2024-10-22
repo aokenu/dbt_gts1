@@ -73,5 +73,5 @@ jobs:
         run: |
           dbt deps  # Install dbt dependencies
           dbt seed  # Load seeds (optional)
-          dbt run --target $DBT_TARGET  # Run models for the specified environment
-          dbt test --target $DBT_TARGET  # Run tests for the specified environment
+          dbt run --target $DBT_TARGET
+          dbt test --target $DBT_TARGET
