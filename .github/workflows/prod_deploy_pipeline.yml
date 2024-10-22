@@ -3,9 +3,10 @@ name: dbt Deployment Pipeline
 on:
   push:
     branches:
-      - dev     # Run on dev branch
-      - staging # Run on staging branch
-      - main    # Run on main (prod)
+      - prod
+  pull_request:
+    branches:
+      - prod
   workflow_dispatch:  # Allows manual trigger from GitHub interface
 
 jobs:
@@ -73,5 +74,5 @@ jobs:
         run: |
           dbt deps  # Install dbt dependencies
           dbt seed  # Load seeds (optional)
-          dbt run --target prod
-          dbt test --target prod
+          dbt run
+          dbt test
