@@ -39,7 +39,7 @@ jobs:
 
       # Conditionally set environment variables based on the branch
       - name: Set environment for dev
-        if: github.ref == 'refs/heads/dev'
+        if: github.ref == 'refs/remotes/origin/dev'
         env:
           DBT_TARGET: dev
           SNOWFLAKE_ROLE: ACCOUNTADMIN
@@ -49,7 +49,7 @@ jobs:
         run: echo "Running in dev environment"
 
       - name: Set environment for staging
-        if: github.ref == 'refs/heads/staging'
+        if: github.ref == 'refs/remotes/origin/staging'
         env:
           DBT_TARGET: staging
           SNOWFLAKE_ROLE: ACCOUNTADMIN
@@ -59,7 +59,7 @@ jobs:
         run: echo "Running in staging environment"
 
       - name: Set environment for production
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/remotes/origin/main'
         env:
           DBT_TARGET: prod
           SNOWFLAKE_ROLE: ACCOUNTADMIN
