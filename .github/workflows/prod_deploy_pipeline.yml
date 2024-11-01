@@ -90,6 +90,9 @@ jobs:
             echo "DBT_TARGET=prod" >> $GITHUB_ENV
           fi
 
+      - name: Verify DBT_TARGET
+        run: echo "DBT_TARGET is $DBT_TARGET"
+
       # Run dbt commands
       - name: Run dbt commands
         run: |
