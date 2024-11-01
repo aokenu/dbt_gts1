@@ -82,12 +82,15 @@ jobs:
       # Set environment variable based on branch
       - name: Set environment variable for branch
         run: |
-          if [ "${GITHUB_REF##*/}" == "dev" ]; then
+          branch="${GITHUB_REF##*/}"
+          if [ "$branch" == "dev" ]; then
             echo "DBT_TARGET=dev" >> $GITHUB_ENV
-          elif [ "${GITHUB_REF##*/}" == "staging" ]; then
+          elif [ "$branch" == "staging" ]; then
             echo "DBT_TARGET=staging" >> $GITHUB_ENV
-          elif [ "${GITHUB_REF##*/}" == "prod" ]; then
+          elif [ "$branch" == "prod" ] || [ "$branch" == "main" ]; then  # Use 'main' if production branch is 'main'
             echo "DBT_TARGET=prod" >> $GITHUB_ENV
+          else
+            echo "DBT_TARGET=dev" >> $GITHUB_ENV  # Default target as a fallback
           fi
 
       - name: Verify DBT_TARGET
