@@ -4,9 +4,13 @@ on:
   push:
     branches:
       - prod
+        staging
+        dev
   pull_request:
     branches:
       - prod
+        staging
+        dev
   workflow_dispatch:  # Allows manual trigger from GitHub interface
 
 jobs:
@@ -42,13 +46,13 @@ jobs:
         if: github.ref == 'refs/heads/dev'
         run: echo "Running in dev environment"
         env:
-          DBT_TARGET: ${{ secrets.DBT_MY_ENV }}
+          DBT_TARGET: ${{ secrets.DBT_DEV_ENV }}
 
       - name: Set environment for staging branch
         if: github.ref == 'refs/heads/staging'
         run: echo "Running in staging environment"
         env:
-          DBT_TARGET: ${{ secrets.DBT_MY_ENV }}
+          DBT_TARGET: ${{ secrets.DBT_STG_ENV }}
 
       - name: Set environment for production branch
         if: github.ref == 'refs/heads/main'
@@ -57,9 +61,26 @@ jobs:
           DBT_TARGET: ${{ secrets.DBT_MY_ENV }}
 
       # Run dbt commands
-      - name: Run dbt commands
+      - name: Run dbt commands for dev
+        if: github.ref == 'refs/heads/dev'
         run: |
           dbt deps  # Install dbt dependencies
           dbt seed  # Load seeds (optional)
-          dbt run --target ${{ secrets.DBT_MY_ENV }}  # Run models for the specified environment
-          dbt test --target ${{ secrets.DBT_MY_ENV }}  # Run tests for the specified environment
+          dbt test --target dev  # Run tests for the specified environment
+          dbt run --target dev  # Run models for the specified environment
+
+      - name: Run dbt commands for staging
+        if: github.ref == 'refs/heads/staging'
+        run: |        
+          dbt deps  # Install dbt dependencies
+          dbt seed  # Load seeds (optional)
+          dbt test --target staging  # Run tests for the specified environment
+          dbt run --target staging  # Run models for the specified environment
+          
+      - name: Run dbt commands for prod
+        if: github.ref == 'refs/heads/main'
+        run: |         
+          dbt deps  # Install dbt dependencies
+          dbt seed  # Load seeds (optional)
+          dbt test --target prod  # Run tests for the specified environment
+          dbt run --target prod  # Run models for the specified environment
