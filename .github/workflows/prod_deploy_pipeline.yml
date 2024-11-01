@@ -42,24 +42,24 @@ jobs:
         if: github.ref == 'refs/heads/dev'
         run: echo "Running in dev environment"
         env:
-          DBT_TARGET: dev
+          DBT_TARGET: ${{ secrets.DBT_MY_ENV }}
 
       - name: Set environment for staging branch
         if: github.ref == 'refs/heads/staging'
         run: echo "Running in staging environment"
         env:
-          DBT_TARGET: staging
+          DBT_TARGET: ${{ secrets.DBT_MY_ENV }}
 
       - name: Set environment for production branch
         if: github.ref == 'refs/heads/main'
         run: echo "Running in production environment"
         env:
-          DBT_TARGET: prod
+          DBT_TARGET: ${{ secrets.DBT_MY_ENV }}
 
       # Run dbt commands
       - name: Run dbt commands
         run: |
           dbt deps  # Install dbt dependencies
           dbt seed  # Load seeds (optional)
-          dbt run --target $DBT_TARGET  # Run models for the specified environment
-          dbt test --target $DBT_TARGET  # Run tests for the specified environment
+          dbt run --target ${{ secrets.DBT_MY_ENV }}  # Run models for the specified environment
+          dbt test --target ${{ secrets.DBT_MY_ENV }}  # Run tests for the specified environment
