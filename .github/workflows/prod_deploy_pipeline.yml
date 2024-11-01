@@ -1,0 +1,105 @@
+name: dbt Deployment Pipeline
+
+on:
+  push:
+    branches:
+      - prod
+      - staging
+      - dev
+  pull_request:
+    branches:
+      - prod
+      - staging
+      - dev
+  workflow_dispatch:
+
+jobs:
+  run-dbt:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+
+      - name: Install dbt
+        run: |
+          python -m pip install --upgrade pip
+          pip install dbt-core dbt-snowflake
+
+      - name: Create profiles.yml
+        run: |
+          mkdir -p ~/.dbt
+          echo "
+          snowflake_profile:
+            target: dev
+            outputs:
+              dev:
+                type: snowflake
+                account: '${{ secrets.SNOWFLAKE_ACCOUNT }}'
+                user: '${{ secrets.SNOWFLAKE_USER }}'
+                password: '${{ secrets.SNOWFLAKE_PASSWORD }}'
+                role: '${{ secrets.SNOWFLAKE_ROLE }}'
+                database: '${{ secrets.SNOWFLAKE_DATABASE }}'
+                warehouse: '${{ secrets.SNOWFLAKE_WAREHOUSE }}'
+                schema: dev_gts_schema
+                threads: 4
+                client_session_keep_alive: False
+                query_tag: dbt_dev
+                authenticator: snowflake
+              staging:
+                type: snowflake
+                account: '${{ secrets.SNOWFLAKE_ACCOUNT }}'
+                user: '${{ secrets.SNOWFLAKE_USER }}'
+                password: '${{ secrets.SNOWFLAKE_PASSWORD }}'
+                role: '${{ secrets.SNOWFLAKE_ROLE }}'
+                database: '${{ secrets.SNOWFLAKE_DATABASE }}'
+                warehouse: '${{ secrets.SNOWFLAKE_WAREHOUSE }}'
+                schema: staging_gts_schema
+                threads: 4
+                client_session_keep_alive: False
+                query_tag: dbt_staging
+                authenticator: snowflake
+              prod:
+                type: snowflake
+                account: '${{ secrets.SNOWFLAKE_ACCOUNT }}'
+                user: '${{ secrets.SNOWFLAKE_USER }}'
+                password: '${{ secrets.SNOWFLAKE_PASSWORD }}'
+                role: '${{ secrets.SNOWFLAKE_ROLE }}'
+                database: '${{ secrets.SNOWFLAKE_DATABASE }}'
+                warehouse: '${{ secrets.SNOWFLAKE_WAREHOUSE }}'
+                schema: prod_gts_schema
+                threads: 4
+                client_session_keep_alive: False
+                query_tag: dbt_prod
+                authenticator: snowflake
+          " > ~/.dbt/profiles.yml
+
+      # Set environment variable based on branch
+      - name: Set environment variable for branch
+        run: |
+          branch="${GITHUB_REF##*/}"
+          if [ "$branch" == "dev" ]; then
+            echo "DBT_TARGET=dev" >> $GITHUB_ENV
+          elif [ "$branch" == "staging" ]; then
+            echo "DBT_TARGET=staging" >> $GITHUB_ENV
+          elif [ "$branch" == "prod" ] || [ "$branch" == "main" ]; then  # Use 'main' if production branch is 'main'
+            echo "DBT_TARGET=prod" >> $GITHUB_ENV
+          else
+            echo "DBT_TARGET=dev" >> $GITHUB_ENV  # Default target as a fallback
+          fi
+
+      - name: Verify DBT_TARGET
+        run: echo "DBT_TARGET is $DBT_TARGET"
+
+      # Run dbt commands
+      - name: Run dbt commands
+        run: |
+          dbt deps
+          dbt seed
+          dbt test --target $DBT_TARGET
+          dbt run --target $DBT_TARGET
