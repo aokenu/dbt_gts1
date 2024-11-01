@@ -34,7 +34,9 @@ models:
               strictly: True
     data_tests:
       - dbt_utils.expression_is_true:
-          expression: "o_totalprice > 5"
+          expression: "o_totalprice > 10"
+          config:
+            limit: 500
     
 
 
