@@ -32,7 +32,7 @@ jobs:
         # Set environment variables and ensure DBT_PROFILES_DIR is set
       - name: Set environment variables for dbt profile
         env:
-          DBT_PROFILES_DIR: ${{ github.workspace }}/profiles  # Point to the correct directory containing profiles.yml
+          DBT_PROFILES_DIR: ${{ secrets.DBT_PROFILE }}  # Point to the correct directory containing profiles.yml
         run: echo "Environment variables set"
 
       # Conditionally set environment variables based on the branch
